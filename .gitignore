@@ -24,7 +24,9 @@ build/
 *.swo
 
 # Large data files
+# Exclude all SQLite databases except the main one
 *.sqlite
+!database.sqlite
 *.db
 *.csv
 *.parquet

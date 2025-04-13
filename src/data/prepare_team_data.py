@@ -91,7 +91,7 @@ def load_team_data():
         AND ht.buildUpPlaySpeed IS NOT NULL
         AND at.buildUpPlaySpeed IS NOT NULL
     ORDER BY m.date DESC
-    LIMIT 1000  -- Limit to most recent 1000 matches for faster processing
+    LIMIT 5000  -- Limit to most recent 1000 matches for faster processing
     """
     
     print("Loading match data...")

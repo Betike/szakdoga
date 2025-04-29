@@ -1,4 +1,4 @@
-Model_Pair,Agreement
+Model Pair,Agreement
 PyTorch vs XGBoost,0.8802816901408451
 PyTorch vs RandomForest,0.8619718309859155
 XGBoost vs RandomForest,0.8126760563380282

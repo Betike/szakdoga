@@ -17,7 +17,7 @@ export function VisualizationTabs({ modelPerformance, visualizationPaths }: Visu
       <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="performance">Model Performance</TabsTrigger>
         <TabsTrigger value="comparison">Model Comparison</TabsTrigger>
-        <TabsTrigger value="distributions">Probability Distributions</TabsTrigger>
+        <TabsTrigger value="other">Other Visualizations</TabsTrigger>
         <TabsTrigger value="model-details">Model Details</TabsTrigger>
       </TabsList>
       
@@ -41,7 +41,7 @@ export function VisualizationTabs({ modelPerformance, visualizationPaths }: Visu
               <CardContent>
                 <div className="space-y-2">
                   <div>
-                    <p className="text-sm font-medium">Strengths:</p>
+                    <p className="text-sm font-medium">Strength:</p>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {model.strengths?.map((strength) => (
                         <Badge key={strength} variant="secondary">{strength}</Badge>
@@ -106,7 +106,7 @@ export function VisualizationTabs({ modelPerformance, visualizationPaths }: Visu
           <Card>
             <CardHeader>
               <CardTitle>Class-Specific Metrics</CardTitle>
-              <CardDescription>Precision and recall for Home win, Draw, and Away win predictions</CardDescription>
+              <CardDescription>Precision and recall for the predictions</CardDescription>
             </CardHeader>
             <CardContent>
               {visualizationPaths.confusion?.exists ? (
@@ -149,10 +149,18 @@ export function VisualizationTabs({ modelPerformance, visualizationPaths }: Visu
             </CardContent>
           </Card>
         </div>
+        <div className="mt-8 p-4 border rounded-lg bg-gray-50">
+          <h3 className="text-lg font-semibold mb-2">About These Visualizations</h3>
+          <p className="text-gray-600">
+            These visualizations are generated from the model comparison analysis on a test set of Premier League matches. 
+            They help illustrate the relative strengths and weaknesses of each prediction model and highlight where they 
+            agree or disagree on specific match outcomes. These metrics can differ based on the data used to train the models and <span className="font-bold">the device used to train the model</span>.
+          </p>
+        </div>
       </TabsContent>
       
-      <TabsContent value="distributions" className="mt-6">
-        <h2 className="text-2xl font-semibold mb-4">Probability Distributions</h2>
+      <TabsContent value="other" className="mt-6">
+        <h2 className="text-2xl font-semibold mb-4">Other Visualizations</h2>
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -227,9 +235,9 @@ export function VisualizationTabs({ modelPerformance, visualizationPaths }: Visu
         <div className="mt-8 p-4 border rounded-lg bg-gray-50">
           <h3 className="text-lg font-semibold mb-2">About These Visualizations</h3>
           <p className="text-gray-600">
-            These visualizations are generated from our model comparison analysis on a test set of Premier League matches. 
+            These visualizations are generated from the model comparison analysis on a test set of Premier League matches. 
             They help illustrate the relative strengths and weaknesses of each prediction model and highlight where they 
-            agree or disagree on specific match outcomes.
+            agree or disagree on specific match outcomes. These metrics can differ based on the data used to train the models and <span className="font-bold">the device used to train the model</span>.
           </p>
         </div>
       </TabsContent>

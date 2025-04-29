@@ -15,6 +15,7 @@ def parse_args():
     parser.add_argument('--home', type=str, required=True, help='Home team name')
     parser.add_argument('--away', type=str, required=True, help='Away team name')
     parser.add_argument('--json', action='store_true', help='Output results as JSON')
+    parser.add_argument('--debug', action='store_true', help='Enable debug mode')
     return parser.parse_args()
 
 def main():
@@ -68,6 +69,11 @@ def main():
         # Use the project root as the working directory
         result = subprocess.run(cmd, cwd=root_dir, capture_output=True, text=True, check=False)
         
+        if args.debug:
+            with open('debug_output.txt', 'w') as f:
+                f.write(f"Raw output: {result.stdout}\n")
+                f.write(f"Raw stderr: {result.stderr}\n")
+        
         if result.returncode != 0:
             if args.json:
                 # Try to extract JSON error if possible
@@ -94,18 +100,20 @@ def main():
         if args.json:
             try:
                 output = result.stdout.strip()
-                # Find the first '{' character, which should be the start of the JSON object
+                # Find JSON between curly braces
                 json_start = output.find('{')
-                if json_start >= 0:
+                json_end = output.rfind('}') + 1
+                
+                if json_start >= 0 and json_end > json_start:
                     # Extract only the JSON part
-                    json_str = output[json_start:]
+                    json_str = output[json_start:json_end]
                     # Parse to ensure it's valid JSON
                     json_obj = json.loads(json_str)
                     # Print only the JSON output
                     print(json.dumps(json_obj))
                 else:
                     # No JSON found, return an error
-                    print(json.dumps({"error": "No JSON output found in script result"}))
+                    print(json.dumps({"error": "No valid JSON output found in script result"}))
                     return 1
             except Exception as e:
                 print(json.dumps({"error": f"Failed to parse JSON output: {str(e)}"}))

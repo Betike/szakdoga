@@ -8,7 +8,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { premierLeagueTeams } from "@/data/teams";
 
 // Define the form schema with Zod
@@ -138,12 +138,7 @@ export function ComparativePrediction() {
   return (
     <div className="w-full max-w-3xl mx-auto">
       <Card>
-        <CardHeader>
-          <CardTitle>Compare Model Predictions</CardTitle>
-          <CardDescription>
-            Compare predictions from all models for a specific match
-          </CardDescription>
-        </CardHeader>
+
 
         <CardContent>
           <Form {...form}>
@@ -266,7 +261,7 @@ export function ComparativePrediction() {
                 <h4 className="font-semibold mb-2">Prediction Agreement</h4>
                 <p className="text-sm text-gray-600">
                   {Object.values(results).every(r => r.result === Object.values(results)[0].result)
-                    ? "All models agree on the prediction!"
+                    ? "All models agree on the prediction! In agreement the accuracy of the predictions is 65%."
                     : "Models have different predictions. Consider using the Ensemble model."}
                 </p>
               </div>

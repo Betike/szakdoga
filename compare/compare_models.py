@@ -434,12 +434,12 @@ def main():
         
         # Create agreement dataframe
         agreement_df = pd.DataFrame({
-            'Model_Pair': list(agreement_counts.keys()),
+            'Model Pair': list(agreement_counts.keys()),
             'Agreement': list(agreement_counts.values())
         })
         
         plt.figure(figsize=(10, 6))
-        sns.barplot(x='Model_Pair', y='Agreement', data=agreement_df)
+        sns.barplot(x='Model Pair', y='Agreement', data=agreement_df)
         plt.title('Model Agreement (% of identical predictions)')
         plt.ylim(0, 1)
         for i, v in enumerate(agreement_df['Agreement']):
@@ -554,7 +554,7 @@ def main():
         predictions = pd.read_csv('compare/results/prediction_comparison.csv')
         
         # Show only the first 10 rows and the main prediction columns
-        prediction_sample = predictions.head(10)
+        prediction_sample = predictions.tail(10)
         cols_to_show = ['True_Result'] + [col for col in predictions.columns if col.endswith('_Pred')]
         prediction_sample = prediction_sample[cols_to_show]
         
@@ -597,7 +597,7 @@ def main():
                 else:
                     cell.set_facecolor((1, 0.7, 0.7))  # Light red
         
-        plt.title('Sample of Prediction Comparison (First 10 Matches)', fontsize=16)
+        plt.title('Sample of Predictions (Last 10 Matches)', fontsize=16)
         plt.tight_layout()
         plt.savefig('visualisations/comparison/prediction_sample.png', bbox_inches='tight')
         

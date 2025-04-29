@@ -6,7 +6,7 @@ import { Navigation } from "@/components/Navigation";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Premier League Football Predictor",
+  title: "Premier League Predictor",
   description: "Predict football match outcomes using machine learning models including XGBoost, Random Forest, and PyTorch",
 };
 
@@ -23,10 +23,10 @@ export default function RootLayout({
           <div className="flex-1">{children}</div>
           <footer className="border-t py-6 text-center text-gray-500 text-xs">
             <p>
-              Premier League Football Predictor - Uses multiple machine learning models to predict match outcomes
+              Premier League Predictor - Predict and Compare
             </p>
             <p className="mt-2">
-              Developed with Next.js, React, and Shadcn UI components
+              Developed by Tóth Levente in 2025
             </p>
           </footer>
         </div>

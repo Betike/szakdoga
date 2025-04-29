@@ -8,7 +8,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { premierLeagueTeams, predictorOptions } from "@/data/teams";
 
 // Define the form schema with Zod
@@ -95,12 +95,6 @@ export function PredictionForm() {
   return (
     <div className="w-full max-w-3xl mx-auto">
       <Card>
-        <CardHeader>
-          <CardTitle>Premier League Match Predictor</CardTitle>
-          <CardDescription>
-            Select a prediction model and the teams to predict the match outcome.
-          </CardDescription>
-        </CardHeader>
 
         <CardContent>
           <Form {...form}>

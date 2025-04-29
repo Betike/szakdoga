@@ -52,10 +52,10 @@ export function getModelColors(): ModelColors {
  */
 export function getModelStrengths(): ModelStrengths {
   return {
-    'XGBoost': ["Home win prediction", "Balanced predictions"],
-    'RandomForest': ["Highest overall accuracy", "Good recall for away wins"],
-    'PyTorch': ["Draw prediction", "Probability calibration"],
-    'Ensemble': ["Best overall performance", "Balanced class predictions"]
+    'XGBoost': ["Speed"],
+    'RandomForest': ["Home and away win prediction"],
+    'PyTorch': ["Draw prediction"],
+    'Ensemble': ["Best overall accuracy"]
   };
 }
 

@@ -187,15 +187,15 @@ if __name__ == "__main__":
             # Minimal output for JSON mode
             pass
         else:
-        print("Loading XGBoost model...")
+            print("Loading XGBoost model...")
         
         model, label_encoder = load_model()
         
         # Print model feature information (only in non-JSON mode)
         if not args.json:
-        training_features = get_training_features(model)
-        if training_features:
-            print(f"Model trained with {len(training_features)} features")
+            training_features = get_training_features(model)
+            if training_features:
+                print(f"Model trained with {len(training_features)} features")
         
         # Load team statistics
         team_stats_path = "data/processed/team_performance_dataset.csv"
@@ -207,8 +207,8 @@ if __name__ == "__main__":
         # Display information about the model (only in non-JSON mode)
         latest_season = team_stats['Season'].max()
         if not args.json:
-        print(f"Using team statistics from season: {latest_season}")
-        print(f"Found stats for {len(team_stats[team_stats['Season'] == latest_season])} teams")
+            print(f"Using team statistics from season: {latest_season}")
+            print(f"Found stats for {len(team_stats[team_stats['Season'] == latest_season])} teams")
         
         # Process based on arguments
         if args.single_match and args.home and args.away:
@@ -328,44 +328,44 @@ if __name__ == "__main__":
         else:
             # Interactive mode - only if not using JSON output
             if not args.json:
-        # Allow user to choose prediction method
-        choice = input("Do you want to predict (1) a single match or (2) multiple matches from a file? (1/2): ")
-        
-        if choice == '1':
-            # Single match prediction
-            print("\nEnter team names for prediction:")
-            home_team = input("Home team: ")
-            away_team = input("Away team: ")
-            
+                # Allow user to choose prediction method
+                choice = input("Do you want to predict (1) a single match or (2) multiple matches from a file? (1/2): ")
+                
+                if choice == '1':
+                    # Single match prediction
+                    print("\nEnter team names for prediction:")
+                    home_team = input("Home team: ")
+                    away_team = input("Away team: ")
+                    
                     # Check if the teams are identical
                     if home_team == away_team:
                         print("\nError: Home team and away team cannot be identical. A team cannot play against itself.")
                     else:
                         try:
-            result, probabilities = predict_match(model, label_encoder, home_team, away_team, team_stats)
-            
-            if result is not None:
-                print(f"\nPredicted result for {home_team} vs {away_team}: {result}")
-                
-                print("\nProbabilities:")
-                for outcome, prob in sorted(probabilities.items(), key=lambda x: x[1], reverse=True):
-                    print(f"{outcome}: {prob:.2%}")
+                            result, probabilities = predict_match(model, label_encoder, home_team, away_team, team_stats)
+                            
+                            if result is not None:
+                                print(f"\nPredicted result for {home_team} vs {away_team}: {result}")
+                                
+                                print("\nProbabilities:")
+                                for outcome, prob in sorted(probabilities.items(), key=lambda x: x[1], reverse=True):
+                                    print(f"{outcome}: {prob:.2%}")
                         except Exception as e:
                             print(f"\nError: {e}")
-        
-        elif choice == '2':
-            # Batch prediction from file
-            file_path = input("Enter path to CSV file containing matches (format: HomeTeam,AwayTeam): ")
-            
-            if not os.path.exists(file_path):
-                raise FileNotFoundError(f"File not found at {file_path}")
-            
-            matches = pd.read_csv(file_path)
-            required_columns = ['HomeTeam', 'AwayTeam']
-            
-            if not all(col in matches.columns for col in required_columns):
-                raise ValueError(f"Input file must contain columns: {required_columns}")
-            
+                
+                elif choice == '2':
+                    # Batch prediction from file
+                    file_path = input("Enter path to CSV file containing matches (format: HomeTeam,AwayTeam): ")
+                    
+                    if not os.path.exists(file_path):
+                        raise FileNotFoundError(f"File not found at {file_path}")
+                    
+                    matches = pd.read_csv(file_path)
+                    required_columns = ['HomeTeam', 'AwayTeam']
+                    
+                    if not all(col in matches.columns for col in required_columns):
+                        raise ValueError(f"Input file must contain columns: {required_columns}")
+                    
                     # Check for identical teams in the dataset
                     identical_teams = matches[matches['HomeTeam'] == matches['AwayTeam']]
                     if len(identical_teams) > 0:
@@ -378,58 +378,58 @@ if __name__ == "__main__":
                         matches = matches[matches['HomeTeam'] != matches['AwayTeam']]
                         print(f"Proceeding with {len(matches)} valid matches.")
                     
-            # Add columns for predictions
-            matches['PredictedResult'] = None
-            matches['HomeWinProb'] = None
-            matches['DrawProb'] = None
-            matches['AwayWinProb'] = None
-            
-            print(f"\nPredicting outcomes for {len(matches)} matches...")
-            
-            for idx, row in matches.iterrows():
-                home_team = row['HomeTeam']
-                away_team = row['AwayTeam']
-                
-                        try:
-                result, probabilities = predict_match(model, label_encoder, home_team, away_team, team_stats)
-                
-                if result is not None:
-                    matches.at[idx, 'PredictedResult'] = result
+                    # Add columns for predictions
+                    matches['PredictedResult'] = None
+                    matches['HomeWinProb'] = None
+                    matches['DrawProb'] = None
+                    matches['AwayWinProb'] = None
                     
-                    # Store probabilities
-                    matches.at[idx, 'HomeWinProb'] = probabilities.get('Home win', 0)
-                    matches.at[idx, 'DrawProb'] = probabilities.get('Draw', 0)
-                    matches.at[idx, 'AwayWinProb'] = probabilities.get('Away win', 0)
+                    print(f"\nPredicting outcomes for {len(matches)} matches...")
+                    
+                    for idx, row in matches.iterrows():
+                        home_team = row['HomeTeam']
+                        away_team = row['AwayTeam']
+                        
+                        try:
+                            result, probabilities = predict_match(model, label_encoder, home_team, away_team, team_stats)
+                            
+                            if result is not None:
+                                matches.at[idx, 'PredictedResult'] = result
+                                
+                                # Store probabilities
+                                matches.at[idx, 'HomeWinProb'] = probabilities.get('Home win', 0)
+                                matches.at[idx, 'DrawProb'] = probabilities.get('Draw', 0)
+                                matches.at[idx, 'AwayWinProb'] = probabilities.get('Away win', 0)
                         except Exception as e:
                             print(f"Error predicting match {home_team} vs {away_team}: {e}")
-            
-            # Save predictions to file
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_file = f"xgboost_predictions_{timestamp}.csv"
-            matches.to_csv(output_file, index=False)
-            
-            print(f"\nPredictions completed and saved to {output_file}")
-            
-            # Display predictions summary
-            print("\nPredictions summary:")
-            print(matches[['HomeTeam', 'AwayTeam', 'PredictedResult', 
-                          'HomeWinProb', 'DrawProb', 'AwayWinProb']].head(10))
-            
-            # Calculate team-specific prediction breakdown
-            team_predictions = {}
-            for team in pd.concat([matches['HomeTeam'], matches['AwayTeam']]).unique():
-                team_matches = matches[(matches['HomeTeam'] == team) | (matches['AwayTeam'] == team)]
-                team_predictions[team] = team_matches['PredictedResult'].value_counts(normalize=True).to_dict()
-            
-            # Save team predictions to file
-            team_preds_df = pd.DataFrame(team_predictions).T
-            team_preds_df.fillna(0, inplace=True)
-            team_preds_file = f"data_test/xgboost_team_predictions_{timestamp}.csv"
-            team_preds_df.to_csv(team_preds_file)
-            print(f"\nTeam-specific prediction breakdown saved to {team_preds_file}")
-        
-        else:
-            print("Invalid choice. Please run again and select 1 or 2.")
+                    
+                    # Save predictions to file
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    output_file = f"xgboost_predictions_{timestamp}.csv"
+                    matches.to_csv(output_file, index=False)
+                    
+                    print(f"\nPredictions completed and saved to {output_file}")
+                    
+                    # Display predictions summary
+                    print("\nPredictions summary:")
+                    print(matches[['HomeTeam', 'AwayTeam', 'PredictedResult', 
+                                  'HomeWinProb', 'DrawProb', 'AwayWinProb']].head(10))
+                    
+                    # Calculate team-specific prediction breakdown
+                    team_predictions = {}
+                    for team in pd.concat([matches['HomeTeam'], matches['AwayTeam']]).unique():
+                        team_matches = matches[(matches['HomeTeam'] == team) | (matches['AwayTeam'] == team)]
+                        team_predictions[team] = team_matches['PredictedResult'].value_counts(normalize=True).to_dict()
+                    
+                    # Save team predictions to file
+                    team_preds_df = pd.DataFrame(team_predictions).T
+                    team_preds_df.fillna(0, inplace=True)
+                    team_preds_file = f"data_test/xgboost_team_predictions_{timestamp}.csv"
+                    team_preds_df.to_csv(team_preds_file)
+                    print(f"\nTeam-specific prediction breakdown saved to {team_preds_file}")
+                
+                else:
+                    print("Invalid choice. Please run again and select 1 or 2.")
             else:
                 # JSON error for missing arguments
                 print(json.dumps({"error": "Missing required arguments. Use --single-match with --home and --away, or use --file"}))
@@ -438,6 +438,6 @@ if __name__ == "__main__":
         if args.json if 'args' in locals() else False:
             print(json.dumps({"error": str(e)}))
         else:
-        print(f"Error: {e}")
-        import traceback
-        traceback.print_exc() 
+            print(f"Error: {e}")
+            import traceback
+            traceback.print_exc() 

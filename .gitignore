@@ -25,6 +25,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+!football-predictor-ui/src/lib/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -76,8 +77,13 @@ yarn-error.log*
 *.hdf5
 *.pkl
 *.joblib
-!/models/*.json
+!/models/
 !/models/*.pkl
+!/models/*.pth
+
+!/utils/random_forest/*.pkl
+!/utils/xgboost/*.pkl
+!/utils/neural_network/*.pth
 
 # Environment variables
 .env

@@ -1,16 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 
-// Paths
-const COMPARE_RESULTS_DIR = path.join(__dirname, 'compare', 'results');
-const COMPARE_VISUAL_DIR = path.join(__dirname, 'visualisations', 'comparison');
-const TARGET_DIR = path.join(__dirname, 'football-predictor-ui', 'public', 'images', 'visualizations');
-const TARGET_DATA_DIR = path.join(__dirname, 'football-predictor-ui', 'public', 'data');
+// Módosított útvonalak (script már a visualisations mappában van)
+const PROJECT_ROOT = path.join(__dirname, '..');
+const COMPARE_RESULTS_DIR = path.join(PROJECT_ROOT, 'compare', 'results');
+const COMPARE_VISUAL_DIR = path.join(PROJECT_ROOT, 'visualisations', 'comparison');
+const TARGET_DIR = path.join(PROJECT_ROOT, 'football-predictor-ui', 'public', 'images', 'visualizations');
+const TARGET_DATA_DIR = path.join(PROJECT_ROOT, 'football-predictor-ui', 'public', 'data');
 
 // Model-specific visualization paths
-const NEURAL_NET_DIR = path.join(__dirname, 'visualisations', 'neural_network');
-const RANDOM_FOREST_DIR = path.join(__dirname, 'visualisations', 'random_forest');
-const XGBOOST_DIR = path.join(__dirname, 'visualisations', 'xgboost');
+const NEURAL_NET_DIR = path.join(PROJECT_ROOT, 'visualisations', 'neural_network');
+const RANDOM_FOREST_DIR = path.join(PROJECT_ROOT, 'visualisations', 'random_forest');
+const XGBOOST_DIR = path.join(PROJECT_ROOT, 'visualisations', 'xgboost');
 
 // Target directories for model-specific visualizations
 const TARGET_NEURAL_NET_DIR = path.join(TARGET_DIR, 'neural_network');

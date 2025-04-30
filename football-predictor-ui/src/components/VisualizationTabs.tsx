@@ -25,7 +25,6 @@ export function VisualizationTabs({ modelPerformance, visualizationPaths }: Visu
         <h2 className="text-2xl font-semibold mb-4">Model Performance Metrics</h2>
         
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Model performance cards */}
           {modelPerformance.map((model) => (
             <Card key={model.name}>
               <CardHeader>
@@ -245,7 +244,6 @@ export function VisualizationTabs({ modelPerformance, visualizationPaths }: Visu
       <TabsContent value="model-details" className="mt-6">
         <h2 className="text-2xl font-semibold mb-4">Model-Specific Visualizations</h2>
         
-        {/* Neural Network */}
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4 flex items-center">
             <div className={`w-3 h-3 rounded-full bg-purple-500 mr-2`}></div>
@@ -288,7 +286,6 @@ export function VisualizationTabs({ modelPerformance, visualizationPaths }: Visu
           </div>
         </div>
         
-        {/* Random Forest */}
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4 flex items-center">
             <div className={`w-3 h-3 rounded-full bg-green-500 mr-2`}></div>
@@ -331,7 +328,6 @@ export function VisualizationTabs({ modelPerformance, visualizationPaths }: Visu
           </div>
         </div>
         
-        {/* XGBoost */}
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4 flex items-center">
             <div className={`w-3 h-3 rounded-full bg-blue-500 mr-2`}></div>

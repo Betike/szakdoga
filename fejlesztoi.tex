@@ -46,7 +46,7 @@ A Premier League Predictor modularizált, többrétegű architektúrát használ
     \label{fig:system_architecture}
 \end{figure}
 
-Fő komponensek:
+\textbf{Fő komponensek:}
 
 \begin{enumerate}
     \item \textbf{Adatgyűjtés (scraping modul)} - FBref.com oldalról történő adatgyűjtés, nyers adatok mentése
@@ -84,21 +84,9 @@ A rendszer az alábbi nyers adatokat használja, amelyek a \texttt{data/raw} map
     \item \texttt{all\_seasons\_goal\_creation.csv} 
     \item \texttt{all\_seasons\_goalkeeping.csv} 
     \item \texttt{all\_seasons\_league\_table.csv} 
-    \item \texttt{premier\_league\_match\_outcomes\_2017-2018\_to\_2024-2025.csv} - Mérkőzéseredmények
+    \item \texttt{premier\_league\_match\_outcomes\_2017-2018\_to\_2024-2025.csv}
 \end{itemize}
 
-A mérkőzéseredmények dataset tartalmazza az alábbi mezőket:
-\begin{itemize}
-    \item \texttt{Season} - Bajnoki szezon (pl. "2023-2024")
-    \item \texttt{Date} - A mérkőzés dátuma
-    \item \texttt{HomeTeam} - Hazai csapat neve
-    \item \texttt{AwayTeam} - Vendég csapat neve
-    \item \texttt{HomeGoals} - Hazai csapat által szerzett gólok száma
-    \item \texttt{AwayGoals} - Vendég csapat által szerzett gólok száma
-    \item \texttt{Result} - Mérkőzés eredménye: "H" (hazai győzelem), "D" (döntetlen), "A" (vendég győzelem)
-    \item \texttt{Venue} - A mérkőzés helyszíne
-    \item \texttt{HomeXG}, \texttt{AwayXG} - xG (Expected Goals) értékek, ahol elérhetők
-\end{itemize}
 
 \subsection{Feldolgozott adatok}
 
@@ -132,63 +120,68 @@ A célváltozó minden esetben a \texttt{Result} mező, amely lehet "H" (hazai g
 
 \subsection{Scraping modul}
 
-A \texttt{scraping.py} szkript felelős az adatgyűjtésért a FBref.com oldalról. Két fő funkciót tartalmaz:
+A \texttt{scraping.py} script felelős az adatgyűjtésért a FBref.com oldalról. Két fő funkciót tartalmaz:
 
 \begin{itemize}
-    \item \texttt{scrape\_premier\_league\_detailed\_stats(season)} - Egy adott szezon részletes statisztikáinak gyűjtése
+    \item \texttt{scrape\_detailed\_stats(season)} - Egy adott szezon részletes statisztikáinak gyűjtése
     \item \texttt{scrape\_multiple\_seasons(seasons)} - Több szezon adatainak összegyűjtése és kombinálása
-    \item \texttt{scrape\_premier\_league\_match\_outcomes(seasons)} - Mérkőzéseredmények gyűjtése
+    \item \texttt{scrape\_match\_outcomes(seasons)} - Mérkőzéseredmények gyűjtése
 \end{itemize}
 
-A script a ScraperAPI-t használja a lekérések kezelésére az oldal rate limiting elkerülése érdekében. Ennek a használatához saját ScraperAPI token igénylése, majd annak a beillesztése a "*token" helyekre a kódban. 
+A script a ScraperAPI-t használja a lekérések kezelésére az oldal rate limiting elkerülése érdekében. Ennek a használatához saját ScraperAPI tokenre van szükség, amit a "\texttt{*api\_key*}" helyekre kell beilleszteni a kódban.
+Amennyiben egy új szezon adatait is szeretnénk összegyűjteni az oldalról, a \texttt{\_\_main\_\_} metódusban a \texttt{seasons\_to\_scrape} listához lehet hozzáírni \textit{"2024-2025"} formátumban.
 Az összegyűjtött adatokat CSV fájlokba menti.
 
 Futtatás:
-\begin{verbatim}
-python scraping/scraping.py
-\end{verbatim}
+\begin{lstlisting}[language=bash]
+    python scraping/scraping.py
+\end{lstlisting}
 
 \subsection{Data Prep modul}
 
-Az adatelőkészítést két fő szkript végzi:
+Az adatelőkészítést két fő script végzi:
 
-\texttt{create\_team\_performance\_dataset.py} - A különböző statisztikai adatokat tartalmazó CSV fájlokat egyesíti egy \texttt{team\_performance.csv} fájlba, amely tartalmazza az összes releváns jellemzőt minden csapathoz minden szezonban.
-
-\texttt{prepare\_model\_data.py} - A csapatteljesítmény-adatokat és a mérkőzéseredményeket egyesíti egy olyan formátumba, amely alkalmas a gépi tanulási modellek betanítására. Ez a szkript:
 \begin{itemize}
-    \item Párosítja a csapatstatisztikákat a mérkőzéseredményekkel
-    \item Létrehozza a különbség-jellemzőket (a hazai és vendég csapat jellemzőinek különbségét)
-    \item Időrendi alapon felosztja az adatokat tanítási és tesztelési halmazra
+    
+
+\item\texttt{create\_team\_performance\_dataset.py} - A különböző statisztikai adatokat tartalmazó CSV fájlokat egyesíti egy \texttt{team\_performance.csv} fájlba, amely tartalmazza az összes releváns jellemzőt minden csapathoz minden szezonban.
+
+\item\texttt{prepare\_model\_data.py} - A csapatteljesítmény-adatokat és a mérkőzéseredményeket egyesíti egy olyan formátumba, amely alkalmas a gépi tanulási modellek betanítására. Ez a script:
+    \begin{itemize}
+        \item Párosítja a csapatstatisztikákat a mérkőzéseredményekkel
+        \item Létrehozza a különbség-jellemzőket (a hazai és vendég csapat jellemzőinek különbségét)
+        \item Időrendi alapon felosztja az adatokat tanítási és tesztelési halmazra
+    \end{itemize}
 \end{itemize}
 
 Futtatás:
-\begin{verbatim}
-python data_prep/create_team_performance_dataset.py
-python data_prep/prepare_model_data.py
-\end{verbatim}
+\begin{lstlisting}[language=bash]
+    python data_prep/create_team_performance_dataset.py
+    python data_prep/prepare_model_data.py
+\end{lstlisting}
+
 
 \subsection{Train modul}
 
-A train modulban több különböző gépi tanulási modell van implementálva:
+A train modulban 3 különböző gépi tanulási modell van implementálva:
 
 \subsubsection{Random Forest modell}
 
 \texttt{train\_random\_forest\_model.py}
 
-Főbb jellemzők:
 \begin{itemize}
     \item A scikit-learn \texttt{RandomForestClassifier} implementációját használja
     \item Hiperparaméterek: \texttt{n\_estimators=100}, \texttt{max\_depth=10}, \texttt{min\_samples\_split=5}, stb.
     \item A betanítási adatok 15\%-át használja validációs halmazként
     \item A \texttt{LabelEncoder} segítségével kódolja a célváltozót (H/D/A)
     \item Jellemző fontosság elemzést végez és vizualizálja az eredményeket
+    \item Hiperparaméter hangolást végezhetünk, hogy megtalálja a legmegfelelőbb paramétereket, amivel a legjobb pontosságot tudja elérni a még nem látott teszt adatokon, ha módosítjuk a \texttt{tune\_hyperparameters} értékét \textit{True} értékre. Ez esetben jóval hosszabb futási idő várható, 10-20 perc eszköztől függően
 \end{itemize}
 
 \subsubsection{XGBoost modell}
 
 \texttt{train\_xgboost\_model.py}
 
-Főbb jellemzők:
 \begin{itemize}
     \item Az \texttt{xgboost} könyvtárat használja
     \item Multiclass osztályozás softmax valószínűségekkel (\texttt{multi:softprob})
@@ -201,10 +194,9 @@ Főbb jellemzők:
 
 \texttt{train\_pytorch\_model.py} - Mély neurális hálózat implementálása PyTorch keretrendszerben.
 
-Főbb jellemzők:
 \begin{itemize}
     \item Többrétegű perceptron architektúra (MLP)
-    \item Egyéni \texttt{MatchPredictionNN} osztály amely a következő elemeket tartalmazza:
+    \item \texttt{MatchPredictionNN} osztály amely a következő elemeket tartalmazza:
     \begin{itemize}
         \item Bemeneti réteg az összes jellemzővel
         \item Rejtett rétegek ReLU aktivációval
@@ -212,6 +204,27 @@ Főbb jellemzők:
         \item Dropout (0.4) a túltanulás csökkentésére
         \item Kimeneti réteg 3 osztállyal (H/D/A)
     \end{itemize}
+    \begin{figure}[H]
+    \begin{lstlisting}[language=Python]
+class MatchPredictionNN(nn.Module):
+    def __init__(self, input_size, hidden_size=64, dropout_rate=0.4):
+        super(MatchPredictionNN, self).__init__()
+        self.model = nn.Sequential(
+            nn.Linear(input_size, hidden_size),
+            nn.BatchNorm1d(hidden_size),
+            nn.ReLU(),
+            nn.Dropout(dropout_rate),
+            nn.Linear(hidden_size, hidden_size // 2),
+            nn.ReLU(),
+            nn.Dropout(dropout_rate),
+            nn.Linear(hidden_size // 2, 3)  # 3 classes: home win, away win, draw
+        )
+    
+    def forward(self, x):
+        return self.model(x)
+    \end{lstlisting}
+    \caption{MatchPredictionNN osztály}
+    \end{figure}
     \item \texttt{StandardScaler} használata az adatok normalizálására
     \item \texttt{Adam} optimalizáló L2 regularizációval
     \item Tanulási ráta ütemezés (\texttt{ReduceLROnPlateau})
@@ -227,11 +240,16 @@ Mind a három modellnél készülnek teljesítménymetrikák és vizualizációk
 \end{itemize}
 
 Futtatás:
-\begin{verbatim}
-python train/train_random_forest_model.py
-python train/train_xgboost_model.py
-python train/train_pytorch_model.py
-\end{verbatim}
+\begin{lstlisting}[language=bash]
+    python train/train_random_forest_model.py
+\end{lstlisting}
+\begin{lstlisting}[language=bash]
+    python train/train_pytorch_model.py
+\end{lstlisting}
+\begin{lstlisting}[language=bash]
+    python train/train_xgboost_model.py
+\end{lstlisting}
+
 
 \subsection{Predict modul}
 
@@ -241,7 +259,6 @@ A predict modul a betanított modellek használatával biztosít előrejelzések
 
 \texttt{predict\_with\_random\_forest.py}
 
-Főbb funkciók:
 \begin{itemize}
     \item A betanított modell és labelencoder betöltése
     \item Csapatstatisztikák lekérdezése aktuális adatokból
@@ -253,7 +270,6 @@ Főbb funkciók:
 
 \texttt{predict\_with\_xgboost.py}
 
-Főbb funkciók:
 \begin{itemize}
     \item A betanított modell betöltése JSON formátumból
     \item A megfelelő adatformátum (DMatrix) létrehozása
@@ -265,7 +281,6 @@ Főbb funkciók:
 
 \texttt{predict\_with\_pytorch.py}
 
-Főbb funkciók:
 \begin{itemize}
     \item A modell architektúra újradefiniálása
     \item A betanított súlyok betöltése
@@ -279,7 +294,6 @@ Főbb funkciók:
 
 \texttt{predict\_ensemble.py} - A három modell kombinálása
 
-Főbb funkciók:
 \begin{itemize}
     \item Az összes modell betöltése és előrejelzés kérése
     \item Súlyozott döntés a végső eredmény meghatározásához
@@ -287,27 +301,26 @@ Főbb funkciók:
     \item A kalkulált valószínűségek normalizálása
 \end{itemize}
 
-\subsubsection{Központi előrejelzési interfész}
+\subsubsection{Központi prediction interfész}
 
 \texttt{run\_prediction.py} - Egységes parancssori interfész az előrejelzések készítéséhez.
 
-Főbb funkciók:
 \begin{itemize}
     \item Argumentumok feldolgozása (hazai csapat, vendég csapat, modell típus)
-    \item A megfelelő előrejelzési szkript futtatása
+    \item A megfelelő előrejelzési script futtatása
     \item JSON vagy szöveges kimenet
     \item Hibakezelés és diagnosztika
 \end{itemize}
 
-Futtatás(JSON kimenet):
-\begin{verbatim}
-python predict/run_prediction.py --model "ensemble" --home "Liverpool"
---away "Manchester City" --json
-\end{verbatim}
+Futtatás (JSON kimenet):
+
+\begin{lstlisting}[language=bash]
+    python predict/run_prediction.py --model "ensemble" --home "Liverpool"  --away "Manchester City" --json
+\end{lstlisting}
 
 \subsection{Compare modul}
 
-A \texttt{compare\_models.py} szkript a különböző modellek teljesítményét hasonlítja össze a test dataseten:
+A \texttt{compare\_models.py} script a különböző modellek teljesítményét hasonlítja össze a test dataseten:
 
 \begin{itemize}
     \item Betölti a tesztadatokat és minden modell előrejelzését
@@ -317,17 +330,17 @@ A \texttt{compare\_models.py} szkript a különböző modellek teljesítményét
 \end{itemize}
 
 Futtatás:
-\begin{verbatim}
-python compare/compare_models.py
-\end{verbatim}
+\begin{lstlisting}[language=bash]
+    python compare/compare_models.py    
+\end{lstlisting}
 
 \subsection{Frontend}
 
-A frontend komponensei a \texttt{football-predictor-ui} mappában találhatók. Ez egy Next.js alkalmazás, amely TypeScript-et, TailwindCSS-t, React-et és ShadCn komponenseket használ a letisztult, reszponzív felhasználói felület biztosításához.
+A frontend komponensei a \texttt{football-predictor-ui} mappában találhatók. Ez egy Next.js alkalmazás, amely TypeScript-et, TailwindCSS-t, React-et és Shadcn komponenseket használ a letisztult, reszponzív felhasználói felület biztosításához.
 
-\subsubsection{Projektstruktúra}
+\subsubsection{Struktúra:}
 
-A frontend alkalmazás struktúrája a Next.js konvenciókat követ:
+A frontend struktúrája a Next.js konvenciókat követi:
 
 \begin{itemize}
     \item \texttt{src/app/} - Az App Router architektúra alapkönyvtára
@@ -337,14 +350,14 @@ A frontend alkalmazás struktúrája a Next.js konvenciókat követ:
     \item \texttt{public/} - Statikus fájlok (képek, ikonok)
 \end{itemize}
 
-\subsubsection{Oldalak}
+\subsubsection{Oldalak:}
 \begin{itemize}
     \item Kezdőlap (\texttt{src/app/page.tsx})
     \item Prediction oldal (\texttt{src/app/predict/page.tsx})
     \item Vizualizációs oldal (\texttt{src/app/visualizations/page.tsx})
 \end{itemize}
 
-\subsubsection{Komponensek}
+\subsubsection{Komponensek:}
 
 \paragraph{PredictionForm (\texttt{src/components/PredictionForm.tsx})}
 \begin{itemize}
@@ -364,7 +377,7 @@ A frontend alkalmazás struktúrája a Next.js konvenciókat követ:
 \begin{itemize}
     \item Kategorizált tabok a különböző típusú vizualizációkhoz
     \item Képek megjelenítése a modell-teljesítményi metrikákról
-    \item Interaktív leírások és magyarázatok a metrikákhoz
+    \item Leírások a grafikonokról
 \end{itemize}
 
 \paragraph{UI komponensek (\texttt{src/components/ui/})}
@@ -377,7 +390,7 @@ A frontend alkalmazás struktúrája a Next.js konvenciókat követ:
 \paragraph{Predict API (\texttt{src/app/api/predict/route.ts})}
 \begin{itemize}
     \item Next.js Route Handler API implementáció
-    \item Node.js child\_process modul használata a Python scriptek futtatásához
+    \item Node.js \texttt{child\_process} modul használata a Python scriptek futtatásához
     \item JSON alapú kommunikáció a frontend és a backend között
     \item Hibakezelés és visszajelzés a felhasználó számára
     \item Fallback mechanizmus hibák esetén
@@ -385,35 +398,20 @@ A frontend alkalmazás struktúrája a Next.js konvenciókat követ:
 
 \subsubsection{Adatfolyam a frontendben}
 
-A frontend alkalmazás adatfolyama a következő:
 \begin{enumerate}
     \item A felhasználó kiválasztja a csapatokat és a modellt
     \item Az űrlap adatai validálás után elküldésre kerülnek az API végpontnak
-    \item Az API végpont futtatja a megfelelő Python szkriptet
-    \item A Python szkript visszaadja az előrejelzési eredményeket
+    \item Az API végpont futtatja a megfelelő Python scriptet
+    \item A Python script visszaadja az előrejelzési eredményeket
     \item Az eredmények megjelennek a felhasználói felületen vizuális formában
 \end{enumerate}
 
-\subsubsection{Dependency Management}
+Frontend futtatása \texttt{localhost} használatával:
 
-A frontend függőségeit a \texttt{package.json} fájl tartalmazza, a főbb függőségek:
-\begin{itemize}
-    \item next - Next.js keretrendszer
-    \item react, react-dom - React könyvtárak
-    \item tailwindcss - Utility-first CSS keretrendszer
-    \item @hookform/resolvers - Form validációs könyvtár
-    \item zod - Adatvalidációs könyvtár
-    \item typescript - Típusos JavaScript
-\end{itemize}
-
-Fordítás és futtatás:
-\begin{verbatim}
-cd football-predictor-ui
-npm install
-npm run dev    # Fejlesztési mód
-npm run build  # Produkciós build
-npm run start  # Produkciós futtatás
-\end{verbatim}
+\begin{lstlisting}[language=bash]
+    cd football-predictor-ui
+    npm run dev
+\end{lstlisting}
 
 \section{API referencia}
 
@@ -425,21 +423,25 @@ A rendszer REST API-kat használ a modellek előrejelzéseinek eléréséhez.
 
 \textbf{Metódus:} POST
 
-\textbf{Leírás:} Előrejelzést készít egy adott mérkőzésre a specifikált modell alapján.
+\textbf{Request:}
 
-\textbf{Kérés:}
-\begin{verbatim}
+\begin{figure}[H]
+    \begin{lstlisting}[language=Java]
 {
-  "home_team": "Manchester City",
-  "away_team": "Liverpool",
-  "model": "ensemble"  // vagy "random_forest", "xgboost", "neural_network"
+    "home_team": "Manchester City",
+    "away_team": "Liverpool",
+    "model": "neural_network"
 }
-\end{verbatim}
+    \end{lstlisting}
+\end{figure}
 
-\textbf{Válasz:}
-\begin{verbatim}
+
+\textbf{Response:}
+
+\begin{figure}[H]
+    \begin{lstlisting}[language=Java]
 {
-  "prediction": "H",  // "H" (hazai győzelem), "D" (döntetlen), "A" (vendég győzelem)
+  "prediction": "H",
   "probabilities": {
     "home_win": 0.65,
     "draw": 0.20,
@@ -447,68 +449,131 @@ A rendszer REST API-kat használ a modellek előrejelzéseinek eléréséhez.
   },
   "home_team": "Manchester City",
   "away_team": "Liverpool",
-  "model_used": "ensemble"
+  "model_used": "neural_network"
 }
-\end{verbatim}
-
-\section{Adatfolyam és modellezési pipeline}
-
-A teljes adatfolyamat a nyers adatok gyűjtésétől a végső előrejelzésig az alábbi ábrán látható:
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{images/rendszer_adatfolyam.png}
-    \caption{A Premier League Predictor adatfolyama}
-    \label{fig:data-flow}
+    \end{lstlisting}
 \end{figure}
+
 
 \section{Kódszervezés és konvenciók}
 
 \begin{itemize}
     \item A projekt modulokba van szervezve funkcionalitás szerint (scraping, data\_prep, train, stb.)
     \item Minden modul saját mappában található
-    \item A fájlnevek snake\_case konvenciót követnek
-    \item A Python kód a PEP 8 stílusútmutatásokat követi
-    \item A TypeScript kód az ESLint standardokat követi
-    \item A modelleket a \texttt{models/} mappában tároljuk
-    \item Az eredményeket és vizualizációkat a \texttt{visualisations/} mappában tároljuk
+    \item A fájlnevek \texttt{snake\_case} konvenciót követnek
+    \item A modellek a \texttt{models/} mappában vannak tárolva
+    \item A \texttt{utils/} mappában találhatóak a különböző modellek használatához szükséges kiegészítő fájlok és  segédeszközök
+    \item A \texttt{visualisations/} mappában a különböző vizualizációk találhatók, illetve egy \texttt{copy-images.js} fájl amivel a frontend \texttt{public/images} mappájába lehet másolni ebből a mappából a képeket.
+    
+    Futtatása:
+    \begin{lstlisting}[language=bash]
+        node visualisations/copy-visualizations.js
+    \end{lstlisting}
 \end{itemize}
 
-\section{Hibaelhárítás és naplózás}
-
-\subsection{Gyakori hibák és megoldásaik}
-
-\begin{enumerate}
-    \item \textbf{Adatgyűjtési hibák:} Ha a scraping folyamat hibákkal zárul, ellenőrizze az API kulcs érvényességét és a célwebhely elérhetőségét. A scraping.py parancssorból való futtatása részletesebb hibaüzeneteket ad.
-    \item \textbf{Modell betöltési hibák:} Ellenőrizze, hogy a modelleket betanították-e és a megfelelő helyeken tárolódnak.
-    \item \textbf{Függőségi problémák:} Futtassa a \texttt{pip install -r requirements.txt} parancsot a szükséges Python csomagok telepítéséhez.
-\end{enumerate}
-
-\subsection{Naplózás}
-
-A rendszer részletes naplózást alkalmaz a hibák és figyelmeztetések követésére. A naplófájlok a következő formátumot követik:
-
-\begin{verbatim}
-[TIMESTAMP] [LEVEL] [MODULE] - Message
-\end{verbatim}
 
 \section{Tesztelés}
 
-\subsection{Egységtesztek}
+\subsection{Tesztek eredményei}
 
-Az egységtesztek a \texttt{tests/} mappában találhatók, és a \texttt{pytest} keretrendszert használják:
+A rendszer minden komponensét alapos tesztelésnek vetettük alá. Az egységtesztek 100\%-os sikerességi aránnyal futottak le, ami a kód megbízhatóságát jelzi. Az alábbi táblázat a tesztek részletes eredményeit mutatja:
 
-\begin{verbatim}
-python -m pytest tests/
-\end{verbatim}
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|c|}
+\hline
+\textbf{Kategória} & \textbf{Teszt} & \textbf{Eredmény} \\
+\hline
+\multicolumn{3}{|c|}{\textbf{Black-box tesztek}} \\
+\hline
+API & test\_all\_premier\_league\_teams & \checkmark \\
+\hline
+ & test\_model\_availability & \checkmark \\
+\hline
+ & test\_model\_consistency & \checkmark \\
+\hline
+ & test\_prediction\_result\_structure & \checkmark \\
+\hline
+ & test\_same\_home\_away\_team & \checkmark \\
+\hline
+ & test\_unknown\_team & \checkmark \\
+\hline
+\multicolumn{3}{|c|}{\textbf{White-box tesztek}} \\
+\hline
+Adatelőkészítés & test\_data\_cleaning & \checkmark \\
+\hline
+ & test\_feature\_creation & \checkmark \\
+\hline
+ & test\_train\_test\_split & \checkmark \\
+\hline
+Modellezés & test\_feature\_importance\_calculation & \checkmark \\
+\hline
+ & test\_model\_feature\_selection & \checkmark \\
+\hline
+ & test\_pytorch\_imports & \checkmark \\
+\hline
+ & test\_random\_forest\_imports & \checkmark \\
+\hline
+ & test\_random\_forest\_training & \checkmark \\
+\hline
+ & test\_xgboost\_imports & \checkmark \\
+\hline
+Előrejelzés & test\_predict\_single\_match\_function & \checkmark \\
+\hline
+ & test\_predict\_with\_random\_forest\_imports & \checkmark \\
+\hline
+ & test\_run\_prediction\_function & \checkmark \\
+\hline
+ & test\_run\_prediction\_imports & \checkmark \\
+\hline
+ & test\_team\_name\_normalization & \checkmark \\
+\hline
+\end{tabular}
+\caption{A futtatott tesztek és eredményeik}
+\label{tab:test-details}
+\end{table}
 
-\subsection{Teljesítménytesztek}
+A teszteredményekből kiemelendő, hogy a neurális háló modell pontossága a teszt adatokon 59.72\%, a Random Forest modell 60.00\%-os pontosságot ért el, míg az XGBoost modell 58.59\%-ot. A komponensek összesített teljesítményét az alábbi táblázat mutatja:
 
-A modellteljesítmény tesztelését a \texttt{compare\_models.py} szkript végzi, amely részletes metrikákat és összehasonlításokat generál:
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|p{4cm}|}
+\hline
+\textbf{Komponens} & \textbf{Tesztek} & \textbf{Arány} & \textbf{Megjegyzés} \\
+\hline
+API & 6/6 & 100\% & Minden API funkció helyesen működik \\
+\hline
+Adatelőkészítés & 3/3 & 100\% & Hiányzó adatok és jellemzők kezelése megfelelő \\
+\hline
+Modellezés & 6/6 & 100\% & Minden modell sikeres betanítása és mentése \\
+\hline
+Előrejelzés & 5/5 & 100\% & Pontos előrejelzések és csapatnevek kezelése \\
+\hline
+\end{tabular}
+\caption{Komponensek teszteredményei}
+\label{tab:component-results}
+\end{table}
 
-\begin{verbatim}
-python compare/compare_models.py
-\end{verbatim}
+A modellek teljesítményét részletesebben az alábbi táblázat mutatja:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Modell} & \textbf{Pontosság} & \textbf{Macro F1} & \textbf{H-siker} & \textbf{D-siker} \\
+\hline
+Random Forest & 60.00\% & 0.56 & 68\% & 32\% \\
+\hline
+XGBoost & 58.59\% & 0.46 & 69\% & 6\% \\
+\hline
+Neurális háló & 59.72\% & 0.53 & 69\% & 26\% \\
+\hline
+\end{tabular}
+\caption{Modellek teljesítmény-metrikái}
+\label{tab:model-metrics}
+\end{table}
+
+A tesztek futtatási ideje összesen 122.97 másodperc volt, ami elfogadható a 20 különböző teszt lefuttatásához. A modellbetanítási és előrejelzési folyamatok gyorsan és hatékonyan működnek.
 
 \section{Új funkciók hozzáadása}
 
@@ -517,11 +582,11 @@ python compare/compare_models.py
 Új prediktív modell hozzáadásához:
 
 \begin{enumerate}
-    \item Hozzon létre egy új szkriptet a \texttt{train/} mappában, követve a meglévő minták struktúráját
+    \item Hozzon létre egy új scriptet a \texttt{train/} mappában, követve a meglévő minták struktúráját
     \item Implementálja a modell betanítását és mentését
-    \item Hozzon létre egy megfelelő predikciós szkriptet a \texttt{predict/} mappában
-    \item Frissítse a \texttt{compare\_models.py} szkriptet az új modell teljesítményének kiértékelésére
-    \item Frissítse a \texttt{predict\_ensemble.py} szkriptet, ha az új modellt be szeretné építeni az ensemble megközelítésbe
+    \item Hozzon létre egy megfelelő predikciós scriptet a \texttt{predict/} mappában
+    \item Frissítse a \texttt{compare\_models.py} scriptet az új modell teljesítményének kiértékelésére
+    \item Frissítse a \texttt{predict\_ensemble.py} scriptet, ha az új modellt be szeretné építeni az ensemble megközelítésbe
     \item Frissítse a frontend kódot az új modell támogatására
 \end{enumerate}
 
@@ -530,8 +595,8 @@ python compare/compare_models.py
 További adatforrások integrálásához:
 
 \begin{enumerate}
-    \item Bővítse a \texttt{scraping.py} szkriptet az új forrás kezelésére
-    \item Frissítse az adatelőkészítési szkripteket az új adatok integrálásához
+    \item Bővítse a \texttt{scraping.py} scriptet az új forrás kezelésére
+    \item Frissítse az adatelőkészítési scripteket az új adatok integrálásához
     \item Módosítsa a modelleket és a betanítási folyamatot, ha szükséges
 \end{enumerate}
 

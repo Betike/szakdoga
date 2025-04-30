@@ -6,7 +6,6 @@ import fs from 'fs';
 
 const execPromise = util.promisify(exec);
 
-// Define types for mockResults and errors
 type PredictionResult = {
   result: string; 
   probabilities: Record<string, number>;
@@ -14,30 +13,21 @@ type PredictionResult = {
   failed_models?: Record<string, string>;
 };
 
-// Function to run a Python predictor script
 async function runPredictor(
   predictorType: string,
   homeTeam: string,
   awayTeam: string
 ): Promise<PredictionResult> {
   try {
-    // Get the project root directory
     const currentDir = process.cwd();
     
-    // Path to the parent directory containing the predict folder
     const parentDir = path.join(currentDir, '..');
     
-    // Path to the wrapper script
     const wrapperScript = path.join(parentDir, 'predict', 'run_prediction.py');
     
-    // Debug info
-    console.log(`Current working directory: ${currentDir}`);
-    console.log(`Parent directory: ${parentDir}`);
-    console.log(`Wrapper script path: ${wrapperScript}`);
     console.log(`Script exists: ${fs.existsSync(wrapperScript)}`);
     console.log(`Predicting ${homeTeam} vs ${awayTeam} using ${predictorType} model`);
 
-    // Execute the Python wrapper script from the parent directory
     const { stdout, stderr } = await execPromise(
       `cd "${parentDir}" && python "${path.join('predict', 'run_prediction.py')}" --model "${predictorType}" --home "${homeTeam}" --away "${awayTeam}" --json`
     );
@@ -47,16 +37,13 @@ async function runPredictor(
       throw new Error(`Prediction failed: ${stderr}`);
     }
 
-    // Parse the JSON output from the Python script
     try {
       const result = JSON.parse(stdout);
       
-      // Check for error
       if (result.error) {
         throw new Error(result.error);
       }
       
-      // Format the result to match our expected structure
       return {
         result: result.prediction || result.result,
         probabilities: result.probabilities || {},
@@ -70,7 +57,6 @@ async function runPredictor(
   } catch (execError) {
     console.error('Prediction error:', execError);
     
-    // Fall back to mock data if the Python script execution fails
     console.log('Falling back to mock data due to error');
     
     const mockResults: Record<string, PredictionResult> = {
@@ -103,7 +89,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { predictorType, homeTeam, awayTeam } = body;
 
-    // Validate input
     if (!predictorType || !homeTeam || !awayTeam) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -111,7 +96,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if teams are identical
     if (homeTeam === awayTeam) {
       return NextResponse.json(
         { error: 'Home team and away team cannot be identical' },

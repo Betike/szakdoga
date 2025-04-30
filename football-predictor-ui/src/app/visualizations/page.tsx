@@ -9,15 +9,12 @@ import {
 import { VisualizationTabs } from "@/components/VisualizationTabs";
 
 export default async function VisualizationsPage() {
-  // Load visualization data
   const visualizationPaths: VisualizationPaths = await getVisualizationPaths();
   const modelStrengths = getModelStrengths();
   const modelColors = getModelColors();
   
-  // Load model performance data from CSV file
   let modelPerformance: ModelEntry[] = await loadModelPerformanceData() || [];
   
-  // If no data could be loaded, fallback to hardcoded values
   if (modelPerformance.length === 0) {
     console.warn("Falling back to hardcoded model performance data");
     modelPerformance = [

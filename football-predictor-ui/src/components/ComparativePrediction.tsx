@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { premierLeagueTeams } from "@/data/teams";
 
-// Define the form schema with Zod
 const formSchema = z.object({
   homeTeam: z.string().min(1, "Please select a home team"),
   awayTeam: z.string().min(1, "Please select an away team"),
@@ -25,7 +24,6 @@ type PredictionResult = {
   probabilities: Record<string, number>;
 };
 
-// Extended type for ensemble results
 type EnsemblePredictionResult = PredictionResult & {
   warning?: string;
   models_used?: number;
@@ -40,7 +38,6 @@ export function ComparativePrediction() {
   const [results, setResults] = useState<ComparativeResults | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Define form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -49,14 +46,12 @@ export function ComparativePrediction() {
     },
   });
 
-  // Submit handler
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
       setError(null);
       setResults(null);
 
-      // Fetch predictions from all models
       const predictorTypes = ["xgboost", "random_forest", "pytorch", "ensemble"];
       const allResults: ComparativeResults = {};
 
@@ -91,7 +86,6 @@ export function ComparativePrediction() {
     }
   };
 
-  // Helper function to format result
   const formatResult = (result: string) => {
     switch (result) {
       case "H":
@@ -105,7 +99,6 @@ export function ComparativePrediction() {
     }
   };
 
-  // Helper function to get model name
   const getModelName = (key: string) => {
     switch (key) {
       case "xgboost":
@@ -121,7 +114,6 @@ export function ComparativePrediction() {
     }
   };
 
-  // Helper function to get color based on prediction
   const getResultColor = (result: string) => {
     switch (result) {
       case "H":

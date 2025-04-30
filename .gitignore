@@ -67,6 +67,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+*.bib
+
 # Local database files
 *.sqlite-journal
 
@@ -80,6 +82,8 @@ yarn-error.log*
 !/models/
 !/models/*.pkl
 !/models/*.pth
+
+*.tex
 
 !/utils/random_forest/*.pkl
 !/utils/xgboost/*.pkl

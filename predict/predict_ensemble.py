@@ -2,38 +2,23 @@ import argparse
 import subprocess
 import json
 import os
+import traceback
 import pandas as pd
-import numpy as np
 from datetime import datetime
 import sys
 
-# Define the models to use in the ensemble
 MODELS = ["xgboost", "random_forest", "pytorch"]
 
 def run_individual_predictor(predictor_type, home_team, away_team):
-    """
-    Run an individual predictor script and return its prediction and probabilities
-    
-    Args:
-        predictor_type (str): Type of predictor to run
-        home_team (str): Name of the home team
-        away_team (str): Name of the away team
-        
-    Returns:
-        dict: Prediction result and probabilities
-    """
-    # Determine the script path
     wrapper_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "run_prediction.py")
     
-    # Run the script with appropriate arguments
     try:
-        # Print debug information
         print(f"Running {predictor_type} predictor...")
         print(f"Using wrapper script: {wrapper_script}")
         print(f"Script exists: {os.path.exists(wrapper_script)}")
         
         cmd = [
-            sys.executable,  # Use the current Python interpreter
+            sys.executable,
             wrapper_script,
             "--model", predictor_type,
             "--home", home_team,
@@ -41,16 +26,13 @@ def run_individual_predictor(predictor_type, home_team, away_team):
             "--json"
         ]
         
-        # Execute the command and capture output
         result = subprocess.run(cmd, capture_output=True, text=True, check=False)
         
-        # Check for error
         if result.returncode != 0:
             print(f"Warning: {predictor_type} predictor exited with code {result.returncode}")
             print(f"Stderr: {result.stderr}")
             print(f"Stdout: {result.stdout}")
             
-            # Try to parse error message from stdout (which might contain JSON error)
             try:
                 error_data = json.loads(result.stdout)
                 if "error" in error_data:
@@ -58,10 +40,8 @@ def run_individual_predictor(predictor_type, home_team, away_team):
             except:
                 pass
                 
-            # Return error from stderr or a generic message
             return {"error": result.stderr.strip() or f"{predictor_type} predictor failed"}
         
-        # Parse the JSON output
         try:
             result_data = json.loads(result.stdout)
             return result_data
@@ -75,17 +55,7 @@ def run_individual_predictor(predictor_type, home_team, away_team):
         return {"error": str(e)}
 
 def ensemble_predict(home_team, away_team):
-    """
-    Make a prediction using an ensemble of all three models
     
-    Args:
-        home_team (str): Name of the home team
-        away_team (str): Name of the away team
-        
-    Returns:
-        dict: Ensemble prediction result and probabilities
-    """
-    # Run individual predictors
     results = {}
     errors = {}
     successful_models = 0
@@ -102,34 +72,28 @@ def ensemble_predict(home_team, away_team):
             successful_models += 1
             print(f"  - {model.upper()} predictor successful: predicted {result['prediction']}")
     
-    # Check if we have at least one successful prediction
     if not results:
         error_details = "\n".join([f"{model}: {error}" for model, error in errors.items()])
         return {
             "error": f"All predictors failed. Details:\n{error_details}"
         }
     
-    # Combine probabilities from all models
     all_probabilities = {}
     for outcome in ["Home win", "Draw", "Away win"]:
-        # Calculate average probability for each outcome, handling missing values
         probs = [model_result["probabilities"].get(outcome, 0) 
                 for model_result in results.values()]
         all_probabilities[outcome] = sum(probs) / len(probs)
     
-    # Determine the final prediction based on highest average probability
     predicted_outcome = max(all_probabilities, key=all_probabilities.get)
     
-    # Map the predicted outcome to the expected format (H, D, A)
     outcome_map = {"Home win": "H", "Draw": "D", "Away win": "A"}
     final_prediction = outcome_map.get(predicted_outcome, "Unknown")
     
-    # Include information about failed models in the response
     failed_models_info = {}
     if errors:
         failed_models_info = {
             "failed_models": errors,
-            "warning": f"{len(errors)} out of {len(MODELS)} models failed. Prediction is based on {successful_models} model(s)."
+            "warning": f"{len(errors)} out of {len(MODELS)} models failed. Prediction is based on {successful_models} models."
         }
     
     return {
@@ -151,16 +115,6 @@ def parse_args():
     return parser.parse_args()
 
 def process_batch_file(file_path, json_output=False):
-    """
-    Process a batch file of matches
-    
-    Args:
-        file_path (str): Path to the CSV file with matches
-        json_output (bool): Whether to output JSON
-        
-    Returns:
-        pd.DataFrame: DataFrame with predictions
-    """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found at {file_path}")
     
@@ -170,19 +124,16 @@ def process_batch_file(file_path, json_output=False):
     if not all(col in matches.columns for col in required_columns):
         raise ValueError(f"Input file must contain columns: {required_columns}")
     
-    # Check for identical teams in the dataset
     identical_teams = matches[matches['HomeTeam'] == matches['AwayTeam']]
     if len(identical_teams) > 0 and not json_output:
-        print(f"Warning: Found {len(identical_teams)} matches with identical home and away teams.")
+        print(f"Found {len(identical_teams)} matches with identical home and away teams.")
         print("These matches will be skipped:")
         for idx, row in identical_teams.iterrows():
             print(f"- {row['HomeTeam']} vs {row['AwayTeam']}")
-        
-        # Remove matches with identical teams
+
         matches = matches[matches['HomeTeam'] != matches['AwayTeam']]
         print(f"Proceeding with {len(matches)} valid matches.")
     
-    # Add columns for predictions
     matches['PredictedResult'] = None
     matches['HomeWinProb'] = None
     matches['DrawProb'] = None
@@ -196,7 +147,6 @@ def process_batch_file(file_path, json_output=False):
         away_team = row['AwayTeam']
         
         try:
-            # Skip identical team matchups
             if home_team == away_team:
                 continue
                 
@@ -217,14 +167,12 @@ if __name__ == "__main__":
     try:
         args = parse_args()
         
-        # Process based on arguments
         if args.single_match and args.home and args.away:
             home_team = args.home
             away_team = args.away
             
-            # Check if teams are identical
             if home_team == away_team:
-                error_msg = "Home team and away team cannot be identical. A team cannot play against itself."
+                error_msg = "Home team and away team cannot be identical"
                 if args.json:
                     print(json.dumps({"error": error_msg}))
                 else:
@@ -236,13 +184,11 @@ if __name__ == "__main__":
                 
                 if "error" not in result:
                     if args.json:
-                        # Output as JSON
                         print(json.dumps({
                             "prediction": result["prediction"],
                             "probabilities": result["probabilities"]
                         }))
                     else:
-                        # Output for human reading
                         print(f"\nEnsemble prediction for {home_team} vs {away_team}: {result['prediction']}")
                         
                         print("\nCombined probabilities:")
@@ -270,7 +216,6 @@ if __name__ == "__main__":
             try:
                 matches = process_batch_file(args.file, args.json)
                 
-                # Save predictions to file
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 output_file = f"ensemble_predictions_{timestamp}.csv"
                 matches.to_csv(output_file, index=False)
@@ -278,12 +223,7 @@ if __name__ == "__main__":
                 if not args.json:
                     print(f"\nPredictions completed and saved to {output_file}")
                     
-                    # Display predictions summary
-                    print("\nPredictions summary:")
-                    print(matches[['HomeTeam', 'AwayTeam', 'PredictedResult', 
-                                  'HomeWinProb', 'DrawProb', 'AwayWinProb']].head(10))
                 else:
-                    # JSON output for batch predictions
                     print(json.dumps(matches.to_dict(orient='records')))
             except Exception as e:
                 if args.json:
@@ -292,26 +232,20 @@ if __name__ == "__main__":
                     print(f"Error processing file: {e}")
         
         else:
-            # Interactive mode - only if not using JSON output
             if not args.json:
-                print("Premier League Match Predictor - Ensemble Model")
-                print("This model combines predictions from XGBoost, Random Forest, and PyTorch models")
-                print("-" * 70)
+                print("Ensemble Model")
                 
-                # Allow user to choose prediction method
-                choice = input("Do you want to predict (1) a single match or (2) multiple matches from a file? (1/2): ")
+                choice = input("Single match (1) / Multiple matches from a file(2): ")
                 
                 if choice == '1':
-                    # Single match prediction
                     print("\nEnter team names for prediction:")
                     home_team = input("Home team: ")
                     away_team = input("Away team: ")
                     
-                    # Check if the teams are identical
                     if home_team == away_team:
-                        print("\nError: Home team and away team cannot be identical. A team cannot play against itself.")
+                        print("\nError: Home team and away team cannot be identical")
                     else:
-                        print("\nRunning ensemble prediction (this may take a moment)...")
+                        print("\nRunning ensemble prediction...")
                         try:
                             result = ensemble_predict(home_team, away_team)
                             
@@ -334,30 +268,23 @@ if __name__ == "__main__":
                             print(f"\nError: {e}")
                 
                 elif choice == '2':
-                    # Batch prediction from file
                     file_path = input("Enter path to CSV file containing matches (format: HomeTeam,AwayTeam): ")
                     
                     try:
                         matches = process_batch_file(file_path)
                         
-                        # Save predictions to file
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                         output_file = f"ensemble_predictions_{timestamp}.csv"
                         matches.to_csv(output_file, index=False)
                         
                         print(f"\nPredictions completed and saved to {output_file}")
                         
-                        # Display predictions summary
-                        print("\nPredictions summary:")
-                        print(matches[['HomeTeam', 'AwayTeam', 'PredictedResult', 
-                                    'HomeWinProb', 'DrawProb', 'AwayWinProb']].head(10))
                     except Exception as e:
                         print(f"Error: {e}")
                 
                 else:
                     print("Invalid choice. Please run again and select 1 or 2.")
             else:
-                # JSON error for missing arguments
                 print(json.dumps({"error": "Missing required arguments. Use --single-match with --home and --away, or use --file"}))
     
     except Exception as e:
@@ -365,5 +292,4 @@ if __name__ == "__main__":
             print(json.dumps({"error": str(e)}))
         else:
             print(f"Error: {e}")
-            import traceback
             traceback.print_exc() 

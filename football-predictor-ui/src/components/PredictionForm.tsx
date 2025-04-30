@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { premierLeagueTeams, predictorOptions } from "@/data/teams";
 
-// Define the form schema with Zod
 const formSchema = z.object({
   predictorType: z.string().min(1, "Please select a predictor"),
   homeTeam: z.string().min(1, "Please select a home team"),
@@ -26,7 +25,6 @@ type PredictionResult = {
   probabilities: Record<string, number>;
 };
 
-// Extended type for ensemble results
 type EnsemblePredictionResult = PredictionResult & {
   warning?: string;
   models_used?: number;
@@ -39,7 +37,6 @@ export function PredictionForm() {
   const [predictionResult, setPredictionResult] = useState<EnsemblePredictionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Define form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -49,7 +46,6 @@ export function PredictionForm() {
     },
   });
 
-  // Submit handler
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
@@ -78,7 +74,6 @@ export function PredictionForm() {
     }
   };
 
-  // Helper function to format result
   const formatResult = (result: string) => {
     switch (result) {
       case "H":

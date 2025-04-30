@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -19,8 +18,6 @@ os.environ["PYTHONHASHSEED"] = "42"
 torch.manual_seed(42)
 torch.cuda.manual_seed_all(42)
 torch.backends.cudnn.deterministic = True
-
-np.random.seed(42)
 
 os.makedirs('models', exist_ok=True)
 os.makedirs('utils', exist_ok=True)
